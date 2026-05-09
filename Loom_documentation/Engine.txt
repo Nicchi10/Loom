@@ -1,0 +1,121 @@
+@startuml
+
+package Engine {
+
+    package Assemblers {
+	' Assembles the final list of messages to be sent to the LLM provider
+	' Assemble() = copy original messages list, find the system message or creates a new one, BuildContextBlock and AddContent
+	' AssembleInputItems() = recovers the messages list, for each message: if role = 3 adds toolcall's signature ("function_call")
+	' 	and toolcalloutput's signature("function_call_output"), else adds the content with respective role
+	' BuildContextBlock() = Builds the string that aggregates RAG and memory (the modality is set by InjectionStrategy)
+	' AddContent() = {original}{"\n "}{context}
+        class PromptAssembler {
+            + Assemble(invocation: LlmInvocation) : List<Message>
+	    + AssembleInputItems(invocation: LlmInvocation) : List<AssembledItem>
+            + BuildContextBlock(invocation: LlmInvocation) : String
+            + AddContent(original: String, context: String) : String
+        }
+    }
+
+    package Context {
+
+	' Records new tool and executes client-side operations related to function tool results
+	' RegisterTool() = adds new tool in the engine
+	' ExecuteAsync() = executes a tool by JSON LLM request
+        class ToolRegistry {
+            - _invocation : LlmInvocation
+            - _executors : Dictionary<String, ITool>
+            + New(invocation: LlmInvocation)
+            + RegisterTool(tool: ITool)
+            + ExecuteAsync(toolName: String, arguments: Dictionary<String,Object>) : Task<String>
+        }
+
+	' Ingestion, sort chunks by score and ensures the MaxTokens limit is respected
+	' AddResults() = Adds a set of retrieved results to the RAG context, ordered descending by score. If clearExisting, delete the previous context
+        class RagManager {
+            - _invocation : LlmInvocation
+            + New(invocation: LlmInvocation)
+            + HasContext : Boolean
+            + AddResults(chunks: IEnumerable<RagChunk>, clearExisting: Boolean?)
+            + SetStrategy(strategy: InjectionStrategy)
+        }
+
+	' Transforms the message into a summary paragraph, extracts key data, and updates the MemoryContext based on the MemoryMode
+	' UpdateMemory() = Synchronize memory contents according to the defined strategy. If newData, adds new content
+	' To complete!
+        class MemoryManager {
+            - _invocation : LlmInvocation
+            + New(invocation: LlmInvocation)
+            + UpdateMemory(newData: String?)
+            + IsMemoryExpired(timestampLastUpdate: DateTime) : Boolean
+        }
+
+	' Keep chronological order, validate the input and manage token budget
+	' AddMessage() = Adds message into conversation and increment TurnIndex
+	' AddUserRequest() = AddMessage with role == user
+	' AddToolResult() = adds new tool output message
+	' To complete!
+        class ConversationManager {
+            - _invocation : LlmInvocation
+            + New(invocation: LlmInvocation)
+            + AddMessage(role: MessageRole, content: String, metadata: Dictionary<String, Object>?)
+            + AddUserRequest(text: String)
+            + AddToolResult(toolResult: String, toolCallId: String, toolName: String, toolArgs: Dictionary<String, Object>, metadata: Dictionary<String, Object>?)
+            + ResetHistory(keepSystemMessage: Boolean)
+        }
+    }
+
+    package Infrastructure {
+
+	' Calculates and checks if the estimated budget respects the tokens used
+	' CountTokens() = approximates the number of tokens for a string (for now heuristic, to complete)
+	'
+        class TokenCounter {
+            + CountTokens(text: String) : Int
+            + CalculateTotal(invocation: LlmInvocation) : Int
+            + IsWithinBudget(invocation: LlmInvocation) : Boolean
+        }
+
+	' Records new adapter and routes user's input model to a specific provider
+	' Route() = selects the provider based on the entered model (processed by _catalog)
+        class ExecutionRouter {
+            - _adapters : List<IProviderAdapter>
+            - _catalog : ModelCatalog
+            + RegisterAdapter(adapter: IProviderAdapter)
+            + Route(invocation: ILlmInvocation) : IProviderAdapter
+        }
+
+	' Contains the list of all available models and the rules on how to get them
+        class ModelCatalog {
+            - _models : List<ModelMetaData>
+            + GetModelInfo(modelId: String) : ModelMetaData
+            + GetFallBack(priority: ExecutionPriority) : ModelMetaData
+        }
+
+	' Important: NullValueHandling = ignore
+        class ProviderHttpClient {
+            - _httpClient : HttpClient
+            + PostAsync(headers: Dictionary<String, String>, url: String, payload: Dictionary<String,Object>) : Task<TResponse>
+        }
+    }
+
+    ' Client engine
+    ' SendAsync() = checks formal validation and token budget. Calls _router.Route and while currentDepth is lower than MaxToolDepth
+	' executes adapter.ExecuteAsync, if the response is not Null AddMessage(Assistant, content). If response.ToolCalls is Null or 0 return response,
+	' else, iterate between tools, execute and AddToolResult
+    class LoomClient {
+        + Invocation : LlmInvocation
+        + Conversation : ConversationManager
+        + Rag : RagManager
+        + Memory : MemoryManager
+        + Tool : ToolRegistry
+        - _router : ExecutionRouter
+        - _tokenCounter : TokenCounter
+        + New()
+        + RegisterProvider(adapter: IProviderAdapter)
+        + SendAsync() : Task<LlmResponse>
+    }
+
+}
+
+@enduml

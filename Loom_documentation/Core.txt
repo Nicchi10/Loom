@@ -1,0 +1,267 @@
+@startuml
+package Core {
+
+        ' Defines entity role that have generated the message
+        ' 0 = Base instructions for the model
+        ' 1 = Explicit input provide by user
+        ' 2 = LLM responses
+        ' 3 = Function/tool output called by the model
+    package Enums {
+        enum MessageRole {
+            System
+            User
+            Assistant
+            Tool
+        }
+
+        ' Defines how conversation history is processed
+        ' 0 = No memory, only last message is sent
+        ' 1 = Every message is sent (full buffer)
+        ' 2 = All messages are condensed before being sent
+        ' 3 = Keeps only key facts
+        ' 4 = Combines last N messages with a summary
+        enum MemoryMode {
+            None
+            FullHistory
+            Summary
+            Extractive
+            Hybrid
+        }
+
+        ' Defines the mode how context is injected into the final prompt context of RAG
+        ' 0 = Creates marked and split section (e.g ### CONTEXT ###)
+        ' 1 = Provides XML structure section
+        ' 2 = Provides JSON structure section
+        enum InjectionStrategy {
+            Sectioned
+            SystemXML
+            SystemJSON
+        }
+
+        ' Specifies priority optimization for request execution
+        ' 0 = Tradeoff between cost and speed
+        ' 1 = Priority to speed response
+        ' 2 = Priority to savings
+        ' 3 = Priority to max accuracy
+        enum ExecutionPriority {
+            Balanced
+            LatencyOptimized
+            CostOptimized
+            QualityOptimized
+        }
+    }
+
+    package Interfaces {
+
+        ' Contract for the main invocation object
+        ' Validate() = Check internal coherency before the run
+        interface ILlmInvocation {
+            + Conversation : ConversationState
+            + Rag : RagContext
+            + Memory : MemoryContext
+            + Tools : ToolContext
+            + Options : GenerationOptions
+            + Hints : ExecutionHints
+
+            + Validate() : IValidationResult
+        }
+
+        ' Contract for specific provider
+        ' ExecuteAsync() = Take abstract invocation, translate into provider language and return the response
+        ' SupportsCapability() = Check if provider supports specific capability (e.g stream)
+        interface IProviderAdapter {
+            + ProviderName : String
+
+            + ExecuteAsync(invocation: ILlmInvocation) : Task<LlmResponse>
+            + SupportsCapability(capability: String) : Boolean
+        }
+
+        ' Represents the formal outcome of the invocation
+        interface IValidationResult {
+            + IsValid : Boolean
+            + Errors : IEnumerable<String>
+        }
+
+        ' Defines how tool must be invoked by the model
+        ' ToolName = works like a primary key
+        ' Parameters = Raw parameters schema
+        ' ExecuteAsync() = Executes the tool logic using the provided raw input
+        interface ITool {
+            + ToolName : String
+            + Description : String
+            + Parameters : List<ToolParameters>
+            + Required : List<String>
+            + Strictness : Boolean?
+
+            + ExecuteAsync(rawInput: Dictionary<String,Object>) : Task<String>
+        }
+    }
+
+    package Models {
+
+	' Master class for framework logic
+        class LlmInvocation {
+            + Conversation : ConversationState
+            + Rag : RagContext
+            + Memory : MemoryContext
+            + Tools : ToolContext
+            + Options : GenerationOptions
+            + Hints : ExecutionHints
+
+            + Validate() : IValidationResult
+        }
+
+        ILlmInvocation <|.. LlmInvocation
+
+	' Single message
+        class Message {
+            + Role : MessageRole
+            + Content : String
+            + ToolCallId : String
+	    + ToolName : String
+            + ToolArgs : Dictionary<String, Object>
+            + Metadata : Dictionary<String, Object>
+        }
+
+	' Current conversation status
+	' TokenBudget = if Null means unlimited
+        class ConversationState {
+            + TraceId : String
+            + SystemPrompt : String
+            + TokenBudget : Int?
+            + Messages : List<Message>
+            + TurnIndex : Int = 0
+        }
+
+	' User preferences
+	' Priority = Balanced default
+	' MaxRetryCount = error scenario
+        class ExecutionHints {
+            + PreferredModel : String
+            + Priority : ExecutionPriority
+            + MaxRetryCount : Int = 3
+        }
+
+	' Technical parameters
+	' TopK = token filter
+ 	' MaxTokens = token output limits
+        class GenerationOptions {
+            + Temperature : Float?
+            + TopK : Float?
+            + MaxTokens : Int?
+            + StopSequences : List<String>
+            + JsonMode : Boolean = False
+        }
+
+	' Memory state of single session
+	' Mode = FullHistory default
+	' TTL = How long memory must persist
+        class MemoryContext {
+            + Mode : MemoryMode
+            + Content : String
+            + TTL : TimeSpan?
+        }
+
+	' Select best model for a provider
+	' CostLevel = 1 (cheap) -> 5 (expensive)
+	' Capabilities = (e.g 'vision', 'audio'...)
+        class ModelMetaData {
+            + ModelId : String
+            + ProviderName : String
+            + ContextWindow : Int
+            + SupportsTools : Boolean
+            + CostLevel : Int
+            + Capabilities : List<String>
+        }
+
+	' Single chunk of the list
+	' Score = semantic relevance (0.0 - 1.0)
+        class RagChunk {
+            + SourceId : String
+            + Score : Double
+            + Text : String
+            + Metadata : Dictionary<String, Object>
+        }
+
+	' All chunks recovered and the chosen strategy
+	' MaxTokens = recovered by retriever
+        class RagContext {
+            + Strategy : InjectionStrategy
+            + MaxTokens : Int = 2000
+            + RetrievedChunks : List<RagChunk>
+        }
+
+	' Defines tool content
+        class ToolDefinition {
+            + ToolName : String
+            + Description : String
+            + Parameters : List<ToolParameters>
+            + Required : List<String>
+            + Strictness : Boolean?
+        }
+
+	' Properties of tool input schema
+        class ToolParameters {
+            + Name : String
+            + Type : String
+            + Description : String
+            + Enums : List<String>
+        }
+
+	' Properties of tool when invoked
+        class ToolCallInvocation {
+	    + Type : String = "function_call"
+            + CallId : String
+            + ToolName : String
+            + Arguments : Dictionary<String, Object>
+        }
+
+	' Which tools are available for the invoked type
+	' MaxToolDepth = prevents eternal loop calls
+        class ToolContext {
+            + RegisteredTools : List<ToolDefinition>
+            + MaxToolDepth : Int = 5
+        }
+
+	' Properties of LLM response
+        class LlmResponse {
+            + Id : String
+            + ModelUsed : String
+            + Role : MessageRole
+            + Content : String
+            + ToolCalls : List<ToolCallInvocation>
+            + PromptTokens : Integer
+            + CompletionTokens : Integer
+            + TotalTokens : Integer
+            + Metadata : Dictionary<String, Object>
+        }
+
+        class ValidationResult {
+            - _isValid : Boolean
+            - _errors : IEnumerable<String>
+
+            + IsValid : Boolean
+            + Errors : IEnumerable<String>
+
+            + New(isValid : Boolean, errors : IEnumerable<String> = null)
+            + Success() : ValidationResult
+            + Failure(errors : IEnumerable<String>) : ValidationResult
+        }
+
+        IValidationResult <|.. ValidationResult
+    }
+
+    ' Ensures that the invocation contains a coherent and executable configuration before being processed by the LLM
+    ' Validate() = Errors.add(
+    ' 1. No messages (or Null)
+    ' 2. RagBudget >= TotalBudget
+    ' 3. tool.Parameters is Null
+    ' 4. No SystemPrompt (or Null)
+    ' )
+    ' If Errors --> False else --> True
+    class InvocationValidator {
+        + Validate(invocation: ILlmInvocation) : ValidationResult
+    }
+
+}
+@enduml

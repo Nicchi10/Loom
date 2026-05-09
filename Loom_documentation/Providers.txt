@@ -1,0 +1,65 @@
+@startuml
+
+package Providers {
+
+    package OpenAI{
+
+	' Provider for OpenAI solutions
+	' ExecuteAsync() = assembler, BuildToolSchema, payload, headers(with apikey), request
+	' ExtractResponse() = type in output == "message"
+	' ExtractToolInfo() = type in output == "function_call" or "tool_call"
+        class OpenAIAdapter {
+            - _assembler : IAssembler
+            - _http : ProviderHttpClient
+            - _apiKey : String
+            + ProviderName : String
+            + New(apiKey: String, assembler: IAssembler)
+            + ExecuteAsync(invocation: ILlmInvocation) : Task<LlmResponse>
+            + SupportsCapability(capability: String) : Boolean
+            + ExtractResponse(rawResponse: ModelResponse) : String
+	    + ExtractToolInfo(rawResponse: ModelResponse) : List<ToolCallInvocation>
+            + BuildToolSchema(invocation: ILlmInvocation) : List<ProviderToolSchema>
+        }
+
+        class ModelResponse {
+            + All OpenAI's Response field
+        }
+
+        class ProviderToolSchema {
+             + type : String = "function"
+             + name : String
+             + description : String
+             + parameters : ProviderFunctionSchema
+             + strict : Boolean
+        }
+
+        class ProviderFunctionSchema {
+             + type : String = "object"
+             + properties : Dictionary<String,ProviderPropertySchema>
+             + required : List<String>
+             + additionalProperties : Boolean = False
+        }
+
+        class ProviderPropertySchema {
+             + type : String
+             + [enum] : List<String>
+             + description : String
+        }
+
+	' Reconstructs raw data into the specific OpenAI format (ProviderToolSchema/Function/Property)
+        class OpenAIToolSchemaBuilder {
+             Build(def: ToolDefinition) : ProviderToolSchema
+        }
+    }
+}
+
+package Core {
+
+    package Interfaces{
+        Interface IProviderAdapter{}
+
+    }
+
+}
+IProviderAdapter <|.. OpenAIAdapter
+@enduml
