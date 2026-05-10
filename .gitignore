@@ -9,7 +9,8 @@
 !/Loom.Engine/
 !/Loom.Providers/
 !/Loom_documentation/
-!/Images
+!/images
+!/images/**
 
 [Bb]in/
 [Oo]bj/
