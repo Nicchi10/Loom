@@ -1,4 +1,4 @@
-﻿namespace Enums
+﻿namespace Loom.Core.Enums
 {
     /// <summary>
     /// Defines entity role that have generated the message (System, User, Assistant, Tool)

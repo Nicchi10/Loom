@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Models
+namespace Loom.Core.Models
 {
     /// <summary>
     /// Which tools are available for the invoked type

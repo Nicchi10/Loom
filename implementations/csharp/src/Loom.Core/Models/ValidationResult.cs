@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Models
+namespace Loom.Core.Models
 {
     /// <summary>
     /// Implements IValidationResult
@@ -13,7 +13,7 @@ namespace Models
         private readonly List<string> _errors = new List<string>();
 
         public bool IsValid => _isValid;
-        public IEnumerable<string> Erros => _errors;
+        public IEnumerable<string> Errors => _errors;
 
         /// <summary>
         /// Validator constructor

@@ -1,4 +1,4 @@
-namespace Enums
+namespace Loom.Core.Enums
 {
     /// <summary>
     /// Defines the mode how context is injected into the final prompt context of RAG

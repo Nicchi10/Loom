@@ -1,8 +1,9 @@
-﻿using Loom.Core.Models
+﻿using Loom.Core.Models;
 
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
-namespace Interfaces
+namespace Loom.Core.Interfaces
 {
     /// <summary>
     /// Defines how tool must be invoked by the model

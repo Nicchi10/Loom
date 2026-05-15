@@ -1,7 +1,7 @@
 ﻿using Loom.Core.Models;
 using System.Collections.Generic;
 
-namespace Interfaces
+namespace Loom.Core.Interfaces
 {
     /// <summary>
     /// Contract for prompt assembly across different providers

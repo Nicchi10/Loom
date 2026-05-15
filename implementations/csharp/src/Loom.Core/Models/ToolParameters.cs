@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Models
+namespace Loom.Core.Models
 {
     /// <summary>
     /// Properties of tool input schema

@@ -1,9 +1,9 @@
-﻿namespace Models
+﻿namespace Loom.Core.Models
 {
     /// <summary>
     /// Main class for framework logic
     /// </summary>
-    public class LlmInvocation : Interfaces.ILlmInovcation
+    public class LlmInvocation : Interfaces.ILlmInvocation
     {
         public ConversationState Conversation { get; set; } = new ConversationState();
         public RagContext Rag { get; set; } = new RagContext();

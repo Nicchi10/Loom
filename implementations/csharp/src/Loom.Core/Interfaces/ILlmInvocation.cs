@@ -1,4 +1,4 @@
-﻿namespace Interfaces
+﻿namespace Loom.Core.Interfaces
 {
     /// <summary>
     /// Contract for the main invocation object
@@ -15,6 +15,6 @@
         /// <summary>
         /// Check internal coherency before the run
         /// </summary>
-        IvalidationResult Validate();
+        IValidationResult Validate();
     }
 }

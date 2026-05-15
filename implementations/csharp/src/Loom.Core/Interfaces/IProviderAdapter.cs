@@ -1,7 +1,7 @@
-﻿using Loom.Core.Models
+﻿using Loom.Core.Models;
 using System.Threading.Tasks;
 
-namespace Interfaces
+namespace Loom.Core.Interfaces
 {
     /// <summary>
     /// Contract for specific provider

@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 
-namespace Models
+namespace Loom.Core.Models
 {
     /// <summary>
     /// Neutral DTO produced by IAssembler
     /// </summary>
-    public class AssembledItems
+    public class AssembledItem
     {
         public string Role {  get; set; }
         public string Content { get; set; }

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Interfaces
+namespace Loom.Core.Interfaces
 {
     /// <summary>
     /// Represents the formal outcome of the invocation
@@ -15,7 +15,7 @@ namespace Interfaces
         /// <summary>
         /// Error message list
         /// </summary>
-        IEnumerable<string> Erros {  get; }
+        IEnumerable<string> Errors {  get; }
 
     }
 }

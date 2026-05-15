@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Models
+namespace Loom.Core.Models
 {
     /// <summary>
     /// Memory state of single session

@@ -1,4 +1,4 @@
-namespace Enums
+namespace Loom.Core.Enums
 {
     /// <summary>
     /// Specifies priority optimization for request execution

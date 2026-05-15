@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Models
+namespace Loom.Core.Models
 {
     public class Message
     {
@@ -11,3 +11,4 @@ namespace Models
         public Dictionary<string, object> ToolArgs { get; set; }
         public Dictionary<string, object> Metadata { get; set; }
     }
+}

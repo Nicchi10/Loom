@@ -1,4 +1,4 @@
-﻿namespace Models
+﻿namespace Loom.Core.Models
 {
     /// <summary>
     /// User preferences
