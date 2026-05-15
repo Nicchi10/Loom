@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Loom provider adapter for Google Gemini.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Loom.Core\Loom.Core.csproj" />
+    <ProjectReference Include="..\Loom.Engine\Loom.Engine.csproj" />
+  </ItemGroup>
+
+</Project>

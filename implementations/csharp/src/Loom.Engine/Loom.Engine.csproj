@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Loom Engine - orchestrator, context managers, infrastructure.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Loom.Core\Loom.Core.csproj" />
+  </ItemGroup>
+
+  <!--
+    Recommended packages when you start writing code:
+      <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.*" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.*" />
+  -->
+
+</Project>

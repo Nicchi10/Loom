@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Loom Core - language-agnostic contracts: enums, interfaces, models, validation.</Description>
+  </PropertyGroup>
+
+</Project>
