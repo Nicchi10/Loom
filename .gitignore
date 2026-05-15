@@ -1,17 +1,26 @@
 
+# ===== Root whitelist =====
+# Everything at top-level is ignored except the entries below.
 /*
 
 !/.gitignore
 !/.gitattributes
 !/README.md
-!/Loom.sln
-!/Loom.Core/
-!/Loom.Engine/
-!/Loom.Providers/
-!/Loom_documentation/
+!/LICENSE
 !/images
 !/images/**
+!/docs/
+!/docs/**
+!/implementations/
+!/implementations/**
+!/.github/
+!/.github/**
 
+# Local scratchpad — kept on disk, never pushed.
+# The README's quickstart already shows everything a user needs.
+/implementations/vb/ConsoleApp/
+
+# ===== Build artifacts (apply at any depth) =====
 [Bb]in/
 [Oo]bj/
 [Dd]ebug/
@@ -38,6 +47,7 @@ x86/
 *.lastbuildstate
 *.unsuccessfulbuild
 
+# ===== NuGet =====
 *.nupkg
 *.snupkg
 **/[Pp]ackages/*
@@ -45,6 +55,7 @@ x86/
 *.nuget.props
 *.nuget.targets
 
+# ===== IDE / tooling =====
 _ReSharper*/
 *.DotSettings.user
 .idea/
@@ -53,6 +64,7 @@ _ReSharper*/
 *.coverage
 *.coveragexml
 
+# ===== OS =====
 Thumbs.db
 ehthumbs.db
 Desktop.ini
