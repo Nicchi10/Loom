@@ -9,6 +9,8 @@
 </p>
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![VB.NET](https://img.shields.io/badge/VB.NET-5C2D91?logo=dotnet&logoColor=white)](implementations/vb)
+[![C#](https://img.shields.io/badge/C%23-239120?logo=csharp&logoColor=white)](implementations/csharp)
 
 ---
 
