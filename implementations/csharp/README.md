@@ -1,6 +1,6 @@
 # Loom - C# port
 
-> Status: :construction: **work in progress** - scaffolding only, no code yet.
+> Status: :construction: **work in progress** - Cooking.
 
 This folder will host the C# implementation of Loom. The contracts (classes, methods, dependencies) are defined once in the [UML diagrams](../../docs/architecture); this port will conform to them, just expressed in modern C# idioms.
 
