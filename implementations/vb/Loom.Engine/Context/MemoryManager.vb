@@ -20,7 +20,6 @@ Namespace Context
         Public Sub UpdateMemory(Optional newData As String = "")
 
             Dim flag As Integer = _invocation.Memory.Mode
-            ' Dovremo anche gestire la parte del ConversationManager, per ora salva lo storico della chat...
             If flag = MemoryMode.None Then
                 _invocation.Memory.Content = String.Empty
             ElseIf flag = MemoryMode.FullHistory Then

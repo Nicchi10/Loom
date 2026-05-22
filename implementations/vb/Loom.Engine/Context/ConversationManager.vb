@@ -20,9 +20,8 @@ Namespace Context
         ''' Adds message into conversation and increment TurnIndex
         ''' </summary>
         ''' <param name="role"></param>
-        ''' <param name="content"> User messagges, System messages or ToolCall result</param>
-        ''' <param name="toolCallId"></param> 
-        ''' <param name="metadata"></param>
+        ''' <param name="content"> User messagges, System messages </param>
+        ''' <param name="metadata"> Optional </param>
         Public Sub AddMessage(role As MessageRole, content As String, Optional metadata As Dictionary(Of String, Object) = Nothing)
 
             Dim msg As New Message With {
@@ -51,7 +50,11 @@ Namespace Context
         ''' <summary>
         ''' Tool output method
         ''' </summary>
-        ''' <param name="toolName">The result after tool calling</param>
+        ''' <param name="toolResult"> The result after tool calling </param>
+        ''' <param name="toolCallId"></param>
+        ''' <param name="toolName"></param>
+        ''' <param name="toolArgs"></param>
+        ''' <param name="metadata"> Optional </param>
         Public Sub AddToolResult(toolResult As String, toolCallId As String, toolName As String, toolArgs As Dictionary(Of String, Object), Optional metadata As Dictionary(Of String, Object) = Nothing)
             Dim msg As New Message With {
                 .Role = MessageRole.Tool,

@@ -14,6 +14,16 @@ Namespace Context
         End Sub
 
         ''' <summary>
+        ''' Check if RAG context has sufficient data
+        ''' </summary>
+        ''' <returns></returns>
+        Public ReadOnly Property HasContext As Boolean
+            Get
+                Return _invocation.Rag.RetrievedChunks.Any()
+            End Get
+        End Property
+
+        ''' <summary>
         ''' Adds a set of retrieved results to the RAG context
         ''' </summary>
         ''' <param name = "chunks" > The retrieved text chunks</param>
@@ -24,9 +34,9 @@ Namespace Context
 
             Dim filtered As New List(Of RagChunk)
 
-            For Each c In chunks
-                If Not String.IsNullOrWhiteSpace(c.Text) Then
-                    filtered.Add(c)
+            For Each chunk In chunks
+                If Not String.IsNullOrWhiteSpace(chunk.Text) Then
+                    filtered.Add(chunk)
                 End If
             Next
 
@@ -43,16 +53,6 @@ Namespace Context
         Public Sub SetStrategy(strategy As InjectionStrategy)
             _invocation.Rag.Strategy = strategy
         End Sub
-
-        ''' <summary>
-        ''' Check if RAG context has sufficient data
-        ''' </summary>
-        ''' <returns></returns>
-        Public ReadOnly Property HasContext As Boolean
-            Get
-                Return _invocation.Rag.RetrievedChunks.Any()
-            End Get
-        End Property
 
     End Class
 End Namespace
