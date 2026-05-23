@@ -36,7 +36,7 @@ namespace Loom.Engine.Infrastructure
             {
                 total += CountTokens(msg.Content);
 
-                // fixed overhead for role metada
+                // fixed overhead for role metadata
                 total += 4;
             }
 
