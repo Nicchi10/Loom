@@ -12,11 +12,10 @@ namespace Loom.Engine.Infrastructure
     {
         private static readonly HttpClient _httpClient = new HttpClient();
 
-        // Reused across calls: System.Text.Json caches type metadata on the options
-        // instance, so creating a new one per request is an anti-pattern.
         private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
         {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            PropertyNameCaseInsensitive = true
         };
 
         public async Task<TResponse> PostAsync<TResponse>(Dictionary<string, string> headers, string url, Dictionary<string, object> payload)
