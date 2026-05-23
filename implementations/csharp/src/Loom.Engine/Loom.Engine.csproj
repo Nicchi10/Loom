@@ -8,11 +8,8 @@
     <ProjectReference Include="..\Loom.Core\Loom.Core.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-  </ItemGroup>
-
   <!--
+    JSON is handled by System.Text.Json (in-box with net8.0, no package needed).
     Recommended packages when you wire up the LoomClient (DI + typed HttpClient):
       <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.*" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.*" />
