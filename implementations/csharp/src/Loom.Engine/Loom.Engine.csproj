@@ -8,8 +8,12 @@
     <ProjectReference Include="..\Loom.Core\Loom.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+  </ItemGroup>
+
   <!--
-    Recommended packages when you start writing code:
+    Recommended packages when you wire up the LoomClient (DI + typed HttpClient):
       <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.*" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.*" />
   -->
