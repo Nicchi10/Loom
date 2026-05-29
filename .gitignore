@@ -74,4 +74,9 @@ Desktop.ini
 # ===== Secrets / local env =====
 .env
 .env.*
+!.env.example
+
+# ===== Samples =====
+# The samples folder is local-only; usage is illustrated in the README.
+/implementations/csharp/samples/
 
