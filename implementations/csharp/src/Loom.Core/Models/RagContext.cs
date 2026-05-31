@@ -9,7 +9,7 @@ namespace Loom.Core.Models
     {
         public int MaxTokens { get; set; } = 2000; // recovered by retriever
         public Enums.InjectionStrategy Strategy { get; set; }
-        public List<RagChunk> RetrievedChunks { get; set; }
+        public List<RagChunk> RetrievedChunks { get; set; } = new List<RagChunk>();
 
     }
 }

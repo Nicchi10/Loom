@@ -80,3 +80,8 @@ Desktop.ini
 # The samples folder is local-only; usage is illustrated in the README.
 /implementations/csharp/samples/
 
+# Local-only solution that also includes the (ignored) sample project.
+# The committed Loom.sln stays clean; develop/run the sample via *.local.sln.
+*.local.sln
+*.local.slnx
+

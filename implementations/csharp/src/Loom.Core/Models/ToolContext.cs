@@ -7,7 +7,7 @@ namespace Loom.Core.Models
     /// </summary>
     public class ToolContext
     {
-        public List<ToolDefinition> RegisteredTools { get; set; }
+        public List<ToolDefinition> RegisteredTools { get; set; } = new List<ToolDefinition>();
         public int MaxToolDepth { get; set; } = 5; // prevents eternal loop calls
     }
 }
