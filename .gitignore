@@ -85,3 +85,7 @@ Desktop.ini
 *.local.sln
 *.local.slnx
 
+# ===== Tests =====
+# Tests are local-only; not needed by consumers of the library.
+/implementations/csharp/tests/
+

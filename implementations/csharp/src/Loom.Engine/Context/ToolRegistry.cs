@@ -7,6 +7,12 @@ using System.Threading.Tasks;
 
 namespace Loom.Engine.Context
 {
+    /// <summary>
+    /// Registration comes in two distinct ways:
+    /// 1. The description sent to the LLM (def)
+    /// 2. The object saved inside the performer, 
+    /// so when the LLM invokes a Tool, the performer knows where to go to execute it
+    /// </summary>
     public class ToolRegistry
     {
         private readonly LlmInvocation _invocation;

@@ -158,7 +158,7 @@ namespace Loom.Providers.OpenAI
         /// <exception cref="Exception"></exception>
         private string ExtractResponse(ModelResponse rawResponse)
         {
-            string risposta_modello = "";
+            string model_response = "";
 
             try
             {
@@ -170,11 +170,11 @@ namespace Loom.Providers.OpenAI
                         foreach (var content in item.Content)
                         {
                             if (content.Type == "output_text")
-                                risposta_modello = content.Text;
+                                model_response = content.Text;
                         }
                     }
                 }
-                return risposta_modello;
+                return model_response;
 
             }
             catch (Exception ex)
