@@ -21,7 +21,7 @@ implementations/csharp/
 
 Below is an example of an implementation with logging using function calling:
 
-```
+```csharp
 string openaiApiKey = YOUR_OPENAI_KEY; // Pls don't put hardcoded :(
 
 var client = new LoomClient();
@@ -69,7 +69,7 @@ while (true)
 
 Below is an example with our ever-present `get_weather` and `get_horoscope`
 
-```
+```csharp
 internal static class ToolClient
     {
         public static ITool HoroscopeTool { get; } = new Horoscope();

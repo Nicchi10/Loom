@@ -11,6 +11,8 @@ namespace Loom.Engine.Infrastructure
     public class ModelCatalog
     {
 
+        // TODO(#1): make catalog extensible, providers declare their own models (SupportedModels),
+        // ModelCatalog becomes a registry exposed via LoomClient.Models, see issue #1 (pending UML review)
         private readonly List<ModelMetaData> _models = new List<ModelMetaData>
         {
             new ModelMetaData {ModelId = "gpt-5.5", ProviderName = "OpenAI", ContextWindow = 128000, CostLevel = 5},
