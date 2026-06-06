@@ -6,6 +6,9 @@ Namespace Infrastructure
     ''' Contains the list of all available models and the rules on how to get them
     ''' </summary>
     Public Class ModelCatalog
+
+        ' TODO(#1): make catalog extensible, providers Declare their own models (SupportedModels),
+        ' ModelCatalog becomes a registry exposed via LoomClient.Models, see issue #1 (pending UML review)
         Private ReadOnly _models As New List(Of ModelMetaData) From {
             New ModelMetaData With {.ModelId = "gpt-4o", .ProviderName = "OpenAI", .ContextWindow = 128000, .CostLevel = 4},
             New ModelMetaData With {.ModelId = "gpt-4.1-nano", .ProviderName = "OpenAI", .ContextWindow = 128000, .CostLevel = 1},

@@ -1,10 +1,12 @@
-# Loom - C#
+# Loom - C# reference implementation
 
 > Status: **implemented OpenAI provider**
 
-This folder will host the C# implementation of Loom. The contracts (classes, methods, dependencies) are defined once in the [UML diagrams](../../docs/architecture); this port will conform to them, just expressed in modern C# idioms.
+This folder will host the C# implementation of Loom. The contracts (classes, methods, dependencies) are defined once in the [UML diagrams](../../docs/architecture), this port will conform to them, just expressed in modern C# idioms.
 
 ## Planned layout
+
+> If you need a more in-depth analysis of the code and structure, see the [vb-README](../vb/README.md)
 
 ```
 implementations/csharp/
@@ -17,7 +19,7 @@ implementations/csharp/
     --- Loom.Providers.GoogleAI/
 ```
 
-## How to use 
+## Quickstart 
 
 Below is an example of an implementation with logging using function calling:
 
