@@ -77,6 +77,10 @@ namespace Loom.Engine
             // Every early stop RETURNS the transcript built so far -- we never throw work
             // away once tools have run. The single throw below is the fail-fast for an
             // input that is already over budget before the very first model call.
+            // How many times to retry a failed provider call before giving up,
+            // honouring ExecutionHints.MaxRetryCount (clamped to >= 0). Backoff is exponential.
+            int maxRetries = Invocation.Hints.MaxRetryCount < 0 ? 0 : Invocation.Hints.MaxRetryCount;
+
             int round = 0;
             LlmResponse response = null;
 
@@ -97,7 +101,19 @@ namespace Loom.Engine
                     return response;
                 }
 
-                response = await adapter.ExecuteAsync(Invocation);
+                // Call the model, retrying transient provider failures with exponential backoff.
+                for (int attempt = 0; ; attempt++)
+                {
+                    try
+                    {
+                        response = await adapter.ExecuteAsync(Invocation);
+                        break;
+                    }
+                    catch when (attempt < maxRetries)
+                    {
+                        await Task.Delay(200 * (1 << attempt));
+                    }
+                }
 
                 // Record the model's textual content. (The assistant tool-call turn
                 // itself is not persisted here; only tool results are, via AddToolResult.)

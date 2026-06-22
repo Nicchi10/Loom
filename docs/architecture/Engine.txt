@@ -101,7 +101,7 @@ package Engine {
 
     ' Client engine
     ' SendAsync() = validates the invocation, then Route(). Runs the tool-calling loop ("semaforo"): each round it re-checks
-	' the token budget, calls adapter.ExecuteAsync and appends the assistant content. GREEN: no ToolCalls -> return response.
+	' the token budget, calls adapter.ExecuteAsync (retried up to MaxRetryCount with exponential backoff) and appends the assistant content. GREEN: no ToolCalls -> return response.
 	' RED: round >= MaxToolDepth -> return the last response (ToolCalls still present signals the depth ceiling was hit).
 	' YELLOW: execute each tool, AddToolResult, then round += 1.
     class LoomClient {
