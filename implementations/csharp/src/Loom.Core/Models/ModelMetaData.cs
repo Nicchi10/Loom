@@ -12,6 +12,8 @@ namespace Loom.Core.Models
         public int ContextWindow {  get; set; }
         public bool SupportsTools { get; set; }
         public int CostLevel { get; set; } // 1 (cheap) -> 5 (expensive)
+        public int LatencyLevel { get; set; } // 1 (fastest) -> 5 (slowest)
+        public int QualityLevel { get; set; } // 1 (basic) -> 5 (most capable)
         public List<string> Capabilities { get; set; } // (vision, audio, ...)
     }
 }

@@ -8,6 +8,8 @@
         Public Property ContextWindow As Integer
         Public Property SupportsTools As Boolean
         Public Property CostLevel As Integer ' 1 (cheap) -> 5 (expensive)
+        Public Property LatencyLevel As Integer ' 1 (fastest) -> 5 (slowest)
+        Public Property QualityLevel As Integer ' 1 (basic) -> 5 (most capable)
         Public Property Capabilities As List(Of String) ' ('vision', 'audio'...)
     End Class
 End Namespace
