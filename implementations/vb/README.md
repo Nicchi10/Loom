@@ -225,18 +225,18 @@ This is the brain, it composes Core models into actual behaviour.
 ```vbnet
 Public Async Function SendAsync() As Task(Of LlmResponse)
     ' 1. Formal validation
-    ' 2. Token budget check
-    ' 3. Route to a provider adapter
-    ' 4. Loop up to MaxToolDepth:
-    '       - Execute adapter
-    '       - Append assistant content (if any)
-    '       - If no tool calls -> return
-    '       - Otherwise execute every tool and append the results
-    ' 5. Final adapter call after the tool loop
+    ' 2. Route to a provider adapter
+    ' 3. Tool-calling loop ("semaforo"), each round:
+    '       - Re-check the token budget
+    '           (round 0 over budget -> throw; a later round over budget -> stop gracefully)
+    '       - Execute adapter, append assistant content (if any)
+    '       - GREEN: no tool calls -> return the answer
+    '       - RED: round >= MaxToolDepth -> return the last response (depth ceiling)
+    '       - YELLOW: execute every tool, append the results, next round
 End Function
 ```
 
-That loop is the whole "agent" pattern: no decorators, no callbacks-in-callbacks, no DSL. Just a `While`. If it really holds up, I'll buy everyone a drink.
+That loop is the whole "agent" pattern: no decorators, no callbacks-in-callbacks, no DSL. Just a `Do...Loop`. If it really holds up, I'll buy everyone a drink.
 
 ---
 
@@ -257,7 +257,7 @@ Both adapters converge on the same `LlmResponse` so the `LoomClient` loop never 
 
 A caller builds an `LlmInvocation`, registers one or more `ITool`s and at least one `IProviderAdapter` on a `LoomClient`. 
 
-On `SendAsync()`, the client validates the invocation, checks the token budget, asks the `ExecutionRouter` for a provider, and enters the tool-call loop. 
+On `SendAsync()`, the client validates the invocation, asks the `ExecutionRouter` for a provider, and enters the tool-call loop, which re-checks the token budget on every round before each adapter call. 
 
 The chosen adapter delegates message preparation to the `PromptAssembler`, calls the provider over `ProviderHttpClient`, and returns a normalised `LlmResponse`. 
 

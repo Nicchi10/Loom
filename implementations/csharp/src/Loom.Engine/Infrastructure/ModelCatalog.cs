@@ -2,6 +2,7 @@
 using Loom.Core.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Loom.Engine.Infrastructure
 {
@@ -37,42 +38,43 @@ namespace Loom.Engine.Infrastructure
         }
 
         /// <summary>
-        /// Fallback if user input model isn't found
+        /// Fallback when the user did not pick a model: chooses one from the catalog
+        /// according to the requested ExecutionPriority.
         /// </summary>
-        /// <param name="priority"> Choose by user </param>
-        /// <returns> ModelMetaData object with user settings priority </returns>
-        /// TODO: To be reviewed, only works if ExecutionPriority is 'CostOptimized', map the other options
+        /// <param name="priority"> Chosen by the user </param>
+        /// <returns> The best ModelMetaData for that priority </returns>
+        /// <exception cref="Exception"> Thrown if the catalog is empty </exception>
+        /// <remarks>
+        /// CostLevel is the only ranking signal the catalog has today, so latency and
+        /// quality are approximated from it: the cheapest models are usually the small,
+        /// fast ones, the most expensive are usually the largest, most capable ones.
+        /// TODO(#1): add real LatencyLevel / QualityLevel to ModelMetaData and rank on those.
+        /// </remarks>
         public ModelMetaData GetFallBack(ExecutionPriority priority)
         {
-            ModelMetaData best = null;
+            if (_models.Count == 0)
+                throw new Exception("Model catalog is empty: no fallback model available");
 
-            if (priority == ExecutionPriority.CostOptimized)
+            var byCostAscending = _models.OrderBy(m => m.CostLevel).ToList();
+
+            switch (priority)
             {
-                int lowestCost = int.MaxValue;
+                // Cheapest model: lowest bill and, as a proxy, the lowest latency.
+                case ExecutionPriority.CostOptimized:
+                case ExecutionPriority.LatencyOptimized:
+                    return byCostAscending.First();
 
-                foreach (var model in _models)
-                {
-                    if (model.CostLevel < lowestCost)
-                    {
-                        lowestCost = model.CostLevel;
-                        best = model;
-                    }
-                }
-            } else
-            {
-                int highestCost = int.MinValue;
+                // Most expensive model: best proxy we have for "most capable".
+                case ExecutionPriority.QualityOptimized:
+                    return byCostAscending.Last();
 
-                foreach (var model in _models)
-                {
-                    if (model.CostLevel > highestCost)
-                    {
-                        highestCost = model.CostLevel;
-                        best = model;
-                    }
-                }
+                // Balanced: the positional middle of the cost-sorted list -- a rough
+                // proxy, not a true cost midpoint. On even counts it biases to the pricier
+                // side; with a richer catalog it lands between the cheap and pricey models.
+                case ExecutionPriority.Balanced:
+                default:
+                    return byCostAscending[byCostAscending.Count / 2];
             }
-
-            return best;
         }
 
     }

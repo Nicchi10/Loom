@@ -42,46 +42,89 @@ Namespace Engine
         ''' <returns></returns>
         Public Async Function SendAsync() As Task(Of LlmResponse)
 
+            ' Formal validation
             Dim validation = _Invocation.Validate()
 
-            ' Formal validation
             If Not validation.IsValid Then
                 Throw New Exception($"Validation failed: {validation.Errors} ")
             End If
 
-            ' TokenBudget checks
-            If Not _tokenCounter.IsWithinBudget(_Invocation) Then
-                Throw New Exception("Current context exceeds the TokenBudget set")
-            End If
-
             Dim adapter = _router.Route(_Invocation)
 
-            Dim currentDepth As Integer = 0
-            Dim lastResponse As LlmResponse = Nothing
+            ' ── The tool-calling loop, a.k.a. the "semaforo" (traffic light) ──────────
+            ' A model can answer in one shot, or it can ask us to run a tool and then
+            ' look at the result before answering. That second case is a loop:
+            '   model -> tool -> model -> tool -> ...
+            ' Without a brake, a model that keeps asking for tools (or a tool that keeps
+            ' replying "try again") would spin forever and burn money. MaxToolDepth is
+            ' that brake: the maximum number of tool rounds we are willing to run.
+            '
+            ' Read the loop as a traffic light:
+            '   GREEN  - the model returned a final answer (no tool calls) -> return it.
+            '   YELLOW - the model asked for tools and we still have rounds left -> run
+            '            them, feed the results back, let the model think again.
+            '   RED    - we cannot continue (depth ceiling reached, or the budget ran
+            '            out after a tool round) -> stop and return the most recent
+            '            response WITHOUT running more tools the model could no longer
+            '            read. The response is tagged with Metadata("loom.stopReason")
+            '            ("depth_ceiling" or "budget_exceeded") so the caller can tell
+            '            an early stop apart from a normal answer.
+            '
+            ' Every early stop RETURNS the transcript built so far -- we never throw work
+            ' away once tools have run. The single throw below is the fail-fast for an
+            ' input that is already over budget before the very first model call.
+            Dim round As Integer = 0
+            Dim response As LlmResponse = Nothing
 
-            While currentDepth < _Invocation.Tools.MaxToolDepth
-                lastResponse = Await adapter.ExecuteAsync(_Invocation)
+            Do
+                If Not _tokenCounter.IsWithinBudget(_Invocation) Then
+                    ' Round 0: the input itself is over budget -> fail fast, nothing to salvage.
+                    If round = 0 Then
+                        Throw New Exception("Current context exceeds the TokenBudget set")
+                    End If
 
-                If Not String.IsNullOrEmpty(lastResponse.Content) Then
-                    _Conversation.AddMessage(MessageRole.Assistant, lastResponse.Content)
+                    ' Later rounds: the tool results we just appended pushed us over
+                    ' budget. Stop gracefully (like RED) instead of discarding the
+                    ' conversation the caller already paid for.
+                    If response.Metadata Is Nothing Then
+                        response.Metadata = New Dictionary(Of String, Object)()
+                    End If
+                    response.Metadata("loom.stopReason") = "budget_exceeded"
+                    Return response
                 End If
 
-                If lastResponse.ToolCalls Is Nothing OrElse lastResponse.ToolCalls.Count = 0 Then
-                    Return lastResponse
+                response = Await adapter.ExecuteAsync(_Invocation)
+
+                ' Record the model's textual content. (The assistant tool-call turn
+                ' itself is not persisted here; only tool results are, via AddToolResult.)
+                If Not String.IsNullOrEmpty(response.Content) Then
+                    _Conversation.AddMessage(MessageRole.Assistant, response.Content)
                 End If
 
-                For Each tCall In lastResponse.ToolCalls
+                ' GREEN: no tools requested -> this is the final answer.
+                Dim modelRequestedTools As Boolean = response.ToolCalls IsNot Nothing AndAlso response.ToolCalls.Count > 0
+                If Not modelRequestedTools Then
+                    Return response
+                End If
 
-                    Dim toolResult = Await _Tool.ExecuteAsync(tCall.ToolName, tCall.Arguments)
+                ' RED: out of tool rounds -> stop rather than running tools the model
+                ' can no longer act on.
+                If round >= _Invocation.Tools.MaxToolDepth Then
+                    If response.Metadata Is Nothing Then
+                        response.Metadata = New Dictionary(Of String, Object)()
+                    End If
+                    response.Metadata("loom.stopReason") = "depth_ceiling"
+                    Return response
+                End If
 
-                    _Conversation.AddToolResult(toolResult, tCall.CallId, tCall.ToolName, tCall.Arguments)
+                ' YELLOW: run every requested tool and feed its result back in.
+                For Each toolCall In response.ToolCalls
+                    Dim toolResult = Await _Tool.ExecuteAsync(toolCall.ToolName, toolCall.Arguments)
+                    _Conversation.AddToolResult(toolResult, toolCall.CallId, toolCall.ToolName, toolCall.Arguments)
                 Next
 
-                currentDepth += 1
-
-            End While
-
-            Return Await adapter.ExecuteAsync(_Invocation)
+                round += 1
+            Loop
 
         End Function
 

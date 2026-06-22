@@ -100,9 +100,10 @@ package Engine {
     }
 
     ' Client engine
-    ' SendAsync() = checks formal validation and token budget. Calls _router.Route and while currentDepth is lower than MaxToolDepth
-	' executes adapter.ExecuteAsync, if the response is not Null AddMessage(Assistant, content). If response.ToolCalls is Null or 0 return response,
-	' else, iterate between tools, execute and AddToolResult
+    ' SendAsync() = validates the invocation, then Route(). Runs the tool-calling loop ("semaforo"): each round it re-checks
+	' the token budget, calls adapter.ExecuteAsync and appends the assistant content. GREEN: no ToolCalls -> return response.
+	' RED: round >= MaxToolDepth -> return the last response (ToolCalls still present signals the depth ceiling was hit).
+	' YELLOW: execute each tool, AddToolResult, then round += 1.
     class LoomClient {
         + Invocation : LlmInvocation
         + Conversation : ConversationManager
