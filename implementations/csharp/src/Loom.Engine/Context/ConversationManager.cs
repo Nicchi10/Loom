@@ -28,7 +28,6 @@ namespace Loom.Engine.Context
         /// <param name="role"></param>
         /// <param name="content">User messagges, System messages </param>
         /// <param name="metadata">Optional</param>
-        /// <exception cref="NotImplementedException"></exception>
         public void AddMessage(MessageRole role, string content, Dictionary<string, object> metadata = null)
         {
             var msg = new Message
@@ -42,8 +41,8 @@ namespace Loom.Engine.Context
             _invocation.Conversation.Messages.Add(msg);
             _invocation.Conversation.TurnIndex += 1;
 
-            if(_invocation.Conversation.TokenBudget != null)
-                throw new NotImplementedException("Preventive budget check(?)");
+            // Budget is enforced by TokenCounter inside the orchestration loop
+            // (LoomClient.SendAsync), so appending a message must never throw here.
 
         }
 

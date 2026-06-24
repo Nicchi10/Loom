@@ -164,6 +164,8 @@ package Core {
 
 	' Select best model for a provider
 	' CostLevel = 1 (cheap) -> 5 (expensive)
+	' LatencyLevel = 1 (fastest) -> 5 (slowest)
+	' QualityLevel = 1 (basic) -> 5 (most capable)
 	' Capabilities = (e.g 'vision', 'audio'...)
         class ModelMetaData {
             + ModelId : String
@@ -171,6 +173,8 @@ package Core {
             + ContextWindow : Int
             + SupportsTools : Boolean
             + CostLevel : Int
+            + LatencyLevel : Int
+            + QualityLevel : Int
             + Capabilities : List<String>
         }
 

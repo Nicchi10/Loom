@@ -33,9 +33,8 @@ Namespace Context
             _invocation.Conversation.Messages.Add(msg)
             _invocation.Conversation.TurnIndex += 1
 
-            If _invocation.Conversation.TokenBudget IsNot Nothing Then
-                Throw New NotImplementedException("Preventive budget control(?)")
-            End If
+            ' Budget is enforced by TokenCounter inside the orchestration loop
+            ' (LoomClient.SendAsync), so appending a message must never throw here.
 
         End Sub
 

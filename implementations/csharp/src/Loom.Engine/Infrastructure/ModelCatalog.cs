@@ -2,6 +2,7 @@
 using Loom.Core.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Loom.Engine.Infrastructure
 {
@@ -15,9 +16,9 @@ namespace Loom.Engine.Infrastructure
         // ModelCatalog becomes a registry exposed via LoomClient.Models, see issue #1 (pending UML review)
         private readonly List<ModelMetaData> _models = new List<ModelMetaData>
         {
-            new ModelMetaData {ModelId = "gpt-5.5", ProviderName = "OpenAI", ContextWindow = 128000, CostLevel = 5},
-            new ModelMetaData {ModelId = "gpt-4.1-nano", ProviderName = "OpenAI", ContextWindow = 128000, CostLevel = 1},
-            new ModelMetaData {ModelId = "gemini-2.5-flash", ProviderName = "GoogleAI", ContextWindow = 128000, CostLevel = 1}
+            new ModelMetaData {ModelId = "gpt-5.5", ProviderName = "OpenAI", ContextWindow = 128000, CostLevel = 5, LatencyLevel = 4, QualityLevel = 5},
+            new ModelMetaData {ModelId = "gpt-4.1-nano", ProviderName = "OpenAI", ContextWindow = 128000, CostLevel = 1, LatencyLevel = 1, QualityLevel = 2},
+            new ModelMetaData {ModelId = "gemini-2.5-flash", ProviderName = "GoogleAI", ContextWindow = 128000, CostLevel = 1, LatencyLevel = 2, QualityLevel = 3}
         };
 
         /// <summary>
@@ -37,42 +38,38 @@ namespace Loom.Engine.Infrastructure
         }
 
         /// <summary>
-        /// Fallback if user input model isn't found
+        /// Fallback when the user did not pick a model: chooses one from the catalog
+        /// according to the requested ExecutionPriority, ranking on the relevant signal
+        /// (CostLevel, LatencyLevel or QualityLevel).
         /// </summary>
-        /// <param name="priority"> Choose by user </param>
-        /// <returns> ModelMetaData object with user settings priority </returns>
-        /// TODO: To be reviewed, only works if ExecutionPriority is 'CostOptimized', map the other options
+        /// <param name="priority"> Chosen by the user </param>
+        /// <returns> The best ModelMetaData for that priority </returns>
+        /// <exception cref="Exception"> Thrown if the catalog is empty </exception>
         public ModelMetaData GetFallBack(ExecutionPriority priority)
         {
-            ModelMetaData best = null;
+            if (_models.Count == 0)
+                throw new Exception("Model catalog is empty: no fallback model available");
 
-            if (priority == ExecutionPriority.CostOptimized)
+            switch (priority)
             {
-                int lowestCost = int.MaxValue;
+                // Cheapest model.
+                case ExecutionPriority.CostOptimized:
+                    return _models.OrderBy(m => m.CostLevel).First();
 
-                foreach (var model in _models)
-                {
-                    if (model.CostLevel < lowestCost)
-                    {
-                        lowestCost = model.CostLevel;
-                        best = model;
-                    }
-                }
-            } else
-            {
-                int highestCost = int.MinValue;
+                // Fastest model (lowest latency rank).
+                case ExecutionPriority.LatencyOptimized:
+                    return _models.OrderBy(m => m.LatencyLevel).First();
 
-                foreach (var model in _models)
-                {
-                    if (model.CostLevel > highestCost)
-                    {
-                        highestCost = model.CostLevel;
-                        best = model;
-                    }
-                }
+                // Most capable model (highest quality rank).
+                case ExecutionPriority.QualityOptimized:
+                    return _models.OrderByDescending(m => m.QualityLevel).First();
+
+                // Balanced: a simple value score that rewards quality while penalising
+                // cost and latency (quality is double-weighted). Highest score wins.
+                case ExecutionPriority.Balanced:
+                default:
+                    return _models.OrderByDescending(m => 2 * m.QualityLevel - m.CostLevel - m.LatencyLevel).First();
             }
-
-            return best;
         }
 
     }
