@@ -52,20 +52,19 @@ namespace Loom.Engine.Infrastructure
 
             switch (priority)
             {
-                // Cheapest model.
+                // Cheapest model
                 case ExecutionPriority.CostOptimized:
                     return _models.OrderBy(m => m.CostLevel).First();
 
-                // Fastest model (lowest latency rank).
+                // Fastest model (lowest latency rank)
                 case ExecutionPriority.LatencyOptimized:
                     return _models.OrderBy(m => m.LatencyLevel).First();
 
-                // Most capable model (highest quality rank).
+                // Most capable model (highest quality rank)
                 case ExecutionPriority.QualityOptimized:
                     return _models.OrderByDescending(m => m.QualityLevel).First();
 
-                // Balanced: a simple value score that rewards quality while penalising
-                // cost and latency (quality is double-weighted). Highest score wins.
+                // Balanced: a simple value score that rewards quality while penalising cost and latency (quality is double-weighted). Highest score wins
                 case ExecutionPriority.Balanced:
                 default:
                     return _models.OrderByDescending(m => 2 * m.QualityLevel - m.CostLevel - m.LatencyLevel).First();
