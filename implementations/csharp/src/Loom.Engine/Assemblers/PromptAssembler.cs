@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -34,7 +34,7 @@ namespace Loom.Engine.Assemblers
                 finalMessages.Insert(0, new Message
                 {
                     Role = MessageRole.System,
-                    Content = AddContent(invocation.Conversation.SystemPrompt, contextBlock)
+                    Content = AddContent(invocation.Conversation.SystemPrompt ?? "", contextBlock)
                 });
             }
 

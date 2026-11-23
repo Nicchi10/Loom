@@ -1,4 +1,4 @@
-﻿using Loom.Core.Enums;
+using Loom.Core.Enums;
 using Loom.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -26,7 +26,7 @@ namespace Loom.Engine.Infrastructure
         /// </summary>
         /// <param name="modelId"> e.g: "gpt-5.5" </param>
         /// <returns> ModelMetaData object </returns>
-        public ModelMetaData GetModelInfo(string modelId)
+        public ModelMetaData? GetModelInfo(string modelId)
         {
             foreach (var model in _models)
             {

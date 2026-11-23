@@ -57,10 +57,15 @@ namespace Loom.Providers.OpenAI
                 { "input", inputItems },
                 { "tools", toolList },
                 { "metadata", new Dictionary<string, object>() },
-                { "service_tier", "priority" },
-                { "max_output_tokens", invocation.Options.MaxTokens },
-                { "temperature", invocation.Options.Temperature }
+                { "service_tier", "priority" }
             };
+
+            // Null options are not sent, OpenAI applies its own defaults
+            if (invocation.Options.MaxTokens.HasValue)
+                payload.Add("max_output_tokens", invocation.Options.MaxTokens.Value);
+
+            if (invocation.Options.Temperature.HasValue)
+                payload.Add("temperature", invocation.Options.Temperature.Value);
 
             var headers = new Dictionary<string, string>
             {
@@ -72,13 +77,13 @@ namespace Loom.Providers.OpenAI
             return new LlmResponse
             {
                 Content = ExtractResponse(rawResponse),
-                Id = rawResponse.Id,
-                ModelUsed = rawResponse.Model,
+                Id = rawResponse.Id ?? "",
+                ModelUsed = rawResponse.Model ?? modelId,
                 Role = MessageRole.Assistant,
                 ToolCalls = ExtractToolInfo(rawResponse),
-                PromptTokens = rawResponse.Usage.Input_tokens,
-                CompletionTokens = rawResponse.Usage.Output_tokens,
-                TotalTokens = rawResponse.Usage.Total_tokens,
+                PromptTokens = rawResponse.Usage?.Input_tokens ?? 0,
+                CompletionTokens = rawResponse.Usage?.Output_tokens ?? 0,
+                TotalTokens = rawResponse.Usage?.Total_tokens ?? 0,
                 Metadata = rawResponse.Metadata
             };
         }
@@ -162,14 +167,16 @@ namespace Loom.Providers.OpenAI
 
             try
             {
+                if (rawResponse.Output == null)
+                    return model_response;
 
                 foreach (var item in rawResponse.Output)
                 {
-                    if (item.Type == "message")
+                    if (item.Type == "message" && item.Content != null)
                     {
                         foreach (var content in item.Content)
                         {
-                            if (content.Type == "output_text")
+                            if (content.Type == "output_text" && content.Text != null)
                                 model_response = content.Text;
                         }
                     }
@@ -197,6 +204,9 @@ namespace Loom.Providers.OpenAI
 
             try
             {
+                if (rawResponse.Output == null)
+                    return toolList;
+
                 foreach (var item in rawResponse.Output)
                 {
                     if (item.Type == "function_call" || item.Type == "tool_call")
@@ -204,15 +214,15 @@ namespace Loom.Providers.OpenAI
                         Dictionary<string, object> argsDict;
 
                         if (!string.IsNullOrEmpty(item.Arguments))
-                            argsDict = JsonSerializer.Deserialize<Dictionary<string, object>>(item.Arguments);
+                            argsDict = JsonSerializer.Deserialize<Dictionary<string, object>>(item.Arguments) ?? new Dictionary<string, object>();
                         else
                             argsDict = new Dictionary<string, object>();
 
                         var tool = new ToolCallInvocation
                         {
                             Type = "function_call",
-                            CallId = item.Call_id,
-                            ToolName = item.Name,
+                            CallId = item.Call_id ?? "",
+                            ToolName = item.Name ?? "",
                             Arguments = argsDict
                         };
 

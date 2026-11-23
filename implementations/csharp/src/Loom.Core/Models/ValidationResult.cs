@@ -1,4 +1,4 @@
-﻿using Loom.Core.Interfaces;
+using Loom.Core.Interfaces;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -20,7 +20,7 @@ namespace Loom.Core.Models
         /// </summary>
         /// <param name="isValid"> Boolean </param>
         /// <param name="errors"> List of String </param>
-        public ValidationResult(bool isValid, List<string> errors = null)
+        public ValidationResult(bool isValid, List<string>? errors = null)
         {
             _isValid = isValid;
             if (errors != null)

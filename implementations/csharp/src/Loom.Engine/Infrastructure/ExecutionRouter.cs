@@ -1,4 +1,4 @@
-﻿using Loom.Core.Interfaces;
+using Loom.Core.Interfaces;
 using Loom.Core.Models;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,7 +29,7 @@ namespace Loom.Engine.Infrastructure
         public IProviderAdapter Route(ILlmInvocation invocation)
         {
             var targetModelId = invocation.Hints.PreferredModel;
-            ModelMetaData selectedModelInfo = null;
+            ModelMetaData? selectedModelInfo = null;
 
             if (!string.IsNullOrWhiteSpace(targetModelId))
                 selectedModelInfo = _catalog.GetModelInfo(targetModelId);

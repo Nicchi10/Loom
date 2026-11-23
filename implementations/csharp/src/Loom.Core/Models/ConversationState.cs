@@ -7,8 +7,8 @@ namespace Loom.Core.Models
     /// </summary>
     public class ConversationState
     {
-        public string TraceId { get; set; }
-        public string SystemPrompt { get; set; }
+        public string TraceId { get; set; } = "";
+        public string? SystemPrompt { get; set; }
         public int? TokenBudget { get; set; }
         public List<Message> Messages { get; set; } = new List<Message>();
         public int TurnIndex { get; set; } = 0;
