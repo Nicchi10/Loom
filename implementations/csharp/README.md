@@ -1,8 +1,8 @@
 # Loom - C# reference implementation
 
-> Status: **implemented OpenAI provider**
+> Status: **reference implementation** - OpenAI and GoogleAI providers implemented
 
-This is the C# implementation of Loom and the one new ports should look at. The contracts (classes, methods, dependencies) are defined once in the [UML diagrams](../../docs/architecture), this port conforms to them, just expressed in modern C# idioms.
+This is the official implementation of Loom and the one new ports should look at. The original VB.NET port has been retired (it lives in the git history), see [Coming from VB.NET](#coming-from-vbnet) for the spots where the two languages diverge the most. The contracts (classes, methods, dependencies) are defined once in the [UML diagrams](../../docs/architecture), this port conforms to them, just expressed in modern C# idioms.
 
 ## Planned layout
 
@@ -28,6 +28,7 @@ string openaiApiKey = YOUR_OPENAI_KEY; // Pls don't put hardcoded :(
 
 var client = new LoomClient();
 client.RegisterProvider(new OpenAIAdapter(openaiApiKey, new PromptAssembler()));
+// client.RegisterProvider(new GoogleAIAdapter(geminiApiKey, new PromptAssembler())); // same contract, Gemini dialect
 
 // ExecutionPriority & MemoryMode they'll be updated as soon as possible
 
@@ -224,7 +225,7 @@ UML reference: [`docs/architecture/Providers.txt`](../../docs/architecture/Provi
 Each provider is its own NuGet-friendly project and implements `IProviderAdapter`, translating the neutral invocation into the provider's native dialect.
 
 - [`Loom.Providers.OpenAI`](src/Loom.Providers.OpenAI) -> talks to `https://api.openai.com/v1/responses`, uses [`OpenAIToolSchemaBuilder`](src/Loom.Providers.OpenAI/OpenAIToolSchemaBuilder.cs) to convert `ToolDefinition` into the OpenAI [tool schema](src/Loom.Providers.OpenAI/Schemas), maps assembled items into the `function_call` / `function_call_output` shape OpenAI expects, parses [`ModelResponse`](src/Loom.Providers.OpenAI/ModelResponse.cs) back into a normalised `LlmResponse`
-- [`Loom.Providers.GoogleAI`](src/Loom.Providers.GoogleAI) -> scaffolded project, the Gemini adapter is the next port from the VB reference (open contribution)
+- [`Loom.Providers.GoogleAI`](src/Loom.Providers.GoogleAI) -> talks to `https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent` (default `gemini-2.5-flash`), uses [`GoogleAIToolSchemaBuilder`](src/Loom.Providers.GoogleAI/GoogleAIToolSchemaBuilder.cs) to emit `function_declarations`, moves the system message into `system_instruction`, maps `assistant` to `model`, `function_call` to a `functionCall` part and `function_call_output` to a `functionResponse` part. Gemini returns no call id, so the adapter generates one to keep the tool loop consistent. [`GenerateContentResponse`](src/Loom.Providers.GoogleAI/GenerateContentResponse.cs) is parsed back into `LlmResponse`, with `finishReason` / `blockReason` surfaced in `Metadata`
 
 Every adapter converges on the same `LlmResponse` so the `LoomClient` loop never has to know which provider it just spoke to.
 
@@ -251,8 +252,109 @@ That's the whole story.
 - **JSON:** `System.Text.Json`, not Newtonsoft
 - **HTTP:** `IHttpClientFactory`, not a static `HttpClient`
 - **Records** for immutable DTOs (`RagChunk`, `ToolParameters`, `LlmResponse`, ...)
-- **File-scoped namespaces** and `switch` expressions where the VB code uses `If/ElseIf` chains
+- **File-scoped namespaces** and `switch` expressions instead of `if/else if` chains
 - **DI-ready:** an extension method `services.AddLoom()` for `Microsoft.Extensions.DependencyInjection`
+
+## Coming from VB.NET
+
+Loom started in VB.NET. That port has been retired, but if you maintained it (or you are porting Loom to another .NET-ish language) these are the spots where the C# version reads most differently. Same contracts, different idioms.
+
+**Implementing an interface** - VB binds every member explicitly with `Implements`, C# matches by name and expression-bodied members do the rest:
+
+```vbnet
+Public Class Weather
+    Implements ITool
+
+    Public ReadOnly Property ToolName As String Implements ITool.ToolName
+        Get
+            Return "get_weather"
+        End Get
+    End Property
+
+    Public Function ExecuteAsync(rawInput As Dictionary(Of String, Object)) As Task(Of String) Implements ITool.ExecuteAsync
+        Return Task.FromResult("Sunny")
+    End Function
+End Class
+```
+
+```csharp
+public sealed class Weather : ITool
+{
+    public string ToolName => "get_weather";
+
+    public Task<string> ExecuteAsync(Dictionary<string, object> rawInput)
+        => Task.FromResult("Sunny");
+}
+```
+
+**Null handling** - VB's two-argument `If(x, y)` and `?.` become `??` / `?.`, and with nullable reference types on, the compiler tells you where a `null` can leak:
+
+```vbnet
+Dim modelId = If(concreteInvocation.Hints.PreferredModel, "gemini-2.5-flash")
+Dim systemText = If(systemItem?.Content, "")
+```
+
+```csharp
+var modelId = concreteInvocation.Hints?.PreferredModel ?? "gemini-2.5-flash";
+var systemText = inputItems.FirstOrDefault(x => x.Role == "system")?.Content ?? "";
+```
+
+**Casts** - `DirectCast` / `CType` become a plain cast (or `as` / pattern matching when the type is not guaranteed):
+
+```vbnet
+Dim concreteInvocation = DirectCast(invocation, LlmInvocation)
+```
+
+```csharp
+var concreteInvocation = (LlmInvocation)invocation;
+```
+
+**Building JSON payloads** - VB has no anonymous-type literal that fits nested arrays nicely, so the original adapters stacked `Dictionary(Of String, Object) From {...}` with `CType(..., Object)` inside multi-line lambdas. C# keeps the same `Select` + `if/else` shape but uses anonymous objects:
+
+```vbnet
+Dim contents = inputItems.Where(Function(x) x.Role <> "system").Select(Function(x)
+    If x.Role = "tool" Then
+        Return CType(New Dictionary(Of String, Object) From {
+            {"role", "user"},
+            {"parts", New List(Of Object) From {
+                New Dictionary(Of String, Object) From {
+                    {"functionResponse", New Dictionary(Of String, Object) From {
+                        {"name", x.ToolName},
+                        {"response", New Dictionary(Of String, Object) From {{"result", x.Content}}}
+                    }}
+                }
+            }}
+        }, Object)
+    Else
+        ' ...
+    End If
+End Function).ToList()
+```
+
+```csharp
+return inputItems.Where(x => x.Role != "system").Select(x =>
+{
+    if (x.Type == "function_call_output")
+    {
+        return (object)new
+        {
+            role = "user",
+            parts = new[] { new { functionResponse = new { name = x.ToolName, response = new { result = x.Content } } } }
+        };
+    }
+    else
+    {
+        // ...
+    }
+}).ToList();
+```
+
+**JSON library** - the VB port targeted `netstandard2.0` with `Newtonsoft.Json`; C# targets `net8.0` and uses the in-box `System.Text.Json`. Two practical consequences:
+
+- deserialised `object` values (tool arguments) arrive as `JsonElement`, not `JToken`, so read them with `GetString()` / `GetInt32()` or `ToString()`
+- property matching is case-sensitive by default, `ProviderHttpClient` turns on `PropertyNameCaseInsensitive` so DTOs can keep PascalCase names
+
+**Escaping keywords** - VB brackets reserved words, C# prefixes them with `@`: `[enum]` becomes `@enum` in the schema DTOs.
 
 ## Want to help?
 

@@ -299,6 +299,18 @@ package Providers {
             + SupportsCapability(String) : Boolean
         }
     }
+
+    package GoogleAI{
+        class GoogleAIAdapter {
+            - _assembler : IAssembler
+            - _http : ProviderHttpClient
+            - _apiKey : String
+            + ProviderName : String
+            + New(apiKey: String, assembler: IAssembler)
+            + ExecuteAsync(ILlmInvocation) : Task<LlmResponse>
+            + SupportsCapability(String) : Boolean
+        }
+    }
 }
 
 package Core {
@@ -307,4 +319,5 @@ package Core {
     }
 }
 IProviderAdapter <|.. OpenAIAdapter
+IProviderAdapter <|.. GoogleAIAdapter
 @enduml
