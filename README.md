@@ -5,7 +5,7 @@
 > Born because my boss was afraid of, and I quote, "integrating Python into .NET" :skull:
 
 <p align="center">
-  <img src="images/logo.png" alt="Loom - RAG, Tooling and Agent orchestration for the languages the AI hype train forgot" width="800" />
+  <img src="images/loom.png" alt="Loom - RAG, Tooling and Agent orchestration for the languages the AI hype train forgot" width="300" />
 </p>
 
 <p align="center">
