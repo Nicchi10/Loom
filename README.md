@@ -9,7 +9,6 @@
 </p>
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![VB.NET](https://img.shields.io/badge/VB.NET-5C2D91?logo=dotnet&logoColor=white)](implementations/vb)
 [![C#](https://img.shields.io/badge/C%23-239120?logo=csharp&logoColor=white)](implementations/csharp)
 
 ---
@@ -50,8 +49,7 @@ Loom/
         --- Providers.txt
         --- z_Loom.txt              <- consolidated diagram (Or at least I hope)
 --- implementations/
-    --- vb/                         <- VB.NET (soon to be deprecated, was the reference implementation but now switched to C#)
-    --- csharp/                     <- C# port (reference implementation coming soon)
+    --- csharp/                     <- C# - the reference implementation
 ```
 
 The architecture (UML) lives once at the top. Each `implementations/<language>/` folder owns a self-contained build, its own README and its own samples, but the public API and the dependency direction are dictated by the diagrams, not by whoever clones the repo first.
@@ -73,8 +71,8 @@ Dependency direction is strict and one-way: **Providers -> Engine -> Core**.
 
 | Language | Status | Location | Notes |
 |---|---|---|---|
-| **VB.NET** | :star: Reference | [`implementations/vb`](implementations/vb) | The original, the UML was drawn against this |
-| **C#** | :fork_and_knife: Future Reference | [`implementations/csharp`](implementations/csharp) | At the end of the porting |
+| **C#** | :star: Reference | [`implementations/csharp`](implementations/csharp) | OpenAI + GoogleAI adapters, the one to port from |
+| **VB.NET** | :headstone: Retired | - | The original, the UML was first drawn against it. Removed from the tree (it lives in the git history), the [C# README](implementations/csharp/README.md#coming-from-vbnet) keeps a few side-by-side snippets |
 | **Java** | :dart: Planned | - | Open issue if you want to claim it |
 | **Your language** | :moyai: You tell us | - | See *Contributing* below |
 

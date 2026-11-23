@@ -51,6 +51,55 @@ package Providers {
              Build(def: ToolDefinition) : ProviderToolSchema
         }
     }
+
+    package GoogleAI{
+
+	' Provider for Google Gemini (generateContent)
+	' ExecuteAsync() = assembler, BuildPayload (system_instruction + contents + tools + generationConfig), headers(x-goog-api-key), request
+	' ExtractResponse() = concatenated text parts of the first candidate (thought parts skipped)
+	' ExtractToolInfo() = parts with functionCall, synthetic CallId (Gemini returns none)
+        class GoogleAIAdapter {
+            - _assembler : IAssembler
+            - _http : ProviderHttpClient
+            - _apiKey : String
+            + ProviderName : String
+            + New(apiKey: String, assembler: IAssembler)
+            + ExecuteAsync(invocation: ILlmInvocation) : Task<LlmResponse>
+            + SupportsCapability(capability: String) : Boolean
+            - BuildPayload(invocation: LlmInvocation) : Dictionary<String,Object>
+            - ExtractResponse(rawResponse: GenerateContentResponse) : String
+            - ExtractToolInfo(rawResponse: GenerateContentResponse) : List<ToolCallInvocation>
+            - BuildToolSchema(invocation: ILlmInvocation) : List<GoogleFunctionDeclaration>
+            - ExtractMetadata(rawResponse: GenerateContentResponse) : Dictionary<String,Object>
+        }
+
+        class GenerateContentResponse {
+            + All Gemini's generateContent fields
+        }
+
+        class GoogleFunctionDeclaration {
+             + name : String
+             + description : String
+             + parameters : GoogleFunctionSchema
+        }
+
+        class GoogleFunctionSchema {
+             + type : String = "object"
+             + properties : Dictionary<String,GooglePropertySchema>
+             + required : List<String>
+        }
+
+        class GooglePropertySchema {
+             + type : String
+             + [enum] : List<String>
+             + description : String
+        }
+
+	' Reconstructs raw data into the Gemini function_declarations format
+        class GoogleAIToolSchemaBuilder {
+             Build(def: ToolDefinition) : GoogleFunctionDeclaration
+        }
+    }
 }
 
 package Core {
@@ -62,4 +111,5 @@ package Core {
 
 }
 IProviderAdapter <|.. OpenAIAdapter
+IProviderAdapter <|.. GoogleAIAdapter
 @enduml

@@ -18,9 +18,8 @@
 !/.github/**
 !.env.example
 
-# Local scratchpad — kept on disk, never pushed.
-# The README's quickstart already shows everything a user needs.
-/implementations/vb/ConsoleApp/
+# Retired VB.NET implementation, removed from the repo (see git history)
+/implementations/vb/
 
 # ===== Build artifacts (apply at any depth) =====
 [Bb]in/

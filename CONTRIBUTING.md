@@ -8,7 +8,7 @@ Open an issue describing what you want to solve or build, one of three flavours 
 
 1. **A bug or a concrete pain point** in an existing implementation. Include a minimal reproduction and which `implementations/<language>/` is affected
 2. **A feature** that fits within the existing scope (a new memory mode, a new injection strategy, a new tool, a smarter router...), explain why it belongs in Loom and not in user code, and which implementation(s) it targets
-3. **A new development direction**: typically a **new language port** (C#, Java, Kotlin, Rust, you name it), the VB.NET wing is taken, pick another. Explain the target ecosystem, the language idioms you want to respect, and confirm that the public API will match the UML
+3. **A new development direction**: typically a new language port (Java, Kotlin, Rust, you name it), the C# wing is taken, pick another and port from [`implementations/csharp`](implementations/csharp), the reference implementation. Explain the target ecosystem, the language idioms you want to respect, and confirm that the public API will match the UML
 
 If you can't write the problem statement in two paragraphs, the problem isn't ready yet.
 
