@@ -1,4 +1,4 @@
-﻿using Loom.Core.Enums;
+using Loom.Core.Enums;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -55,7 +55,7 @@ namespace Loom.Core.Validation
             }
 
             // Existence of system message
-            var sysMsg = invocation.Conversation.Messages.FirstOrDefault(m => m.Role == MessageRole.System);
+            var sysMsg = invocation.Conversation.Messages?.FirstOrDefault(m => m.Role == MessageRole.System);
             if (string.IsNullOrWhiteSpace(invocation.Conversation.SystemPrompt) && (sysMsg == null || string.IsNullOrWhiteSpace(sysMsg.Content)))
             {
                 errors.Add("No SystemMessage setted, provide a valid SystemMessage.");

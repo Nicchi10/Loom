@@ -7,9 +7,9 @@ namespace Loom.Core.Models
     /// </summary>
     public class RagChunk
     {
-        public string SourceId { get; set; }
+        public string SourceId { get; set; } = "";
         public double Score { get; set; } // Semantic relevance (0.0 - 1.0)
-        public string Text { get; set; }
-        public Dictionary<string, object> Metadata { get; set; }
+        public string Text { get; set; } = "";
+        public Dictionary<string, object>? Metadata { get; set; }
     }
 }

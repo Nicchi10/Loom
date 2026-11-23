@@ -76,7 +76,7 @@ namespace Loom.Providers.GoogleAI
             return new LlmResponse
             {
                 Content = ExtractResponse(rawResponse),
-                Id = rawResponse.ResponseId,
+                Id = rawResponse.ResponseId ?? "",
                 ModelUsed = rawResponse.ModelVersion ?? modelId,
                 Role = MessageRole.Assistant,
                 ToolCalls = ExtractToolInfo(rawResponse),
@@ -241,7 +241,7 @@ namespace Loom.Providers.GoogleAI
                             {
                                 Type = "function_call",
                                 CallId = $"call_{Guid.NewGuid().ToString("N").Substring(0, 8)}",
-                                ToolName = part.FunctionCall.Name,
+                                ToolName = part.FunctionCall.Name ?? "",
                                 Arguments = part.FunctionCall.Args ?? new Dictionary<string, object>()
                             };
 
@@ -289,11 +289,13 @@ namespace Loom.Providers.GoogleAI
         {
             var metadata = new Dictionary<string, object>();
 
-            if (rawResponse.Candidates != null && rawResponse.Candidates.Count > 0 && rawResponse.Candidates[0].FinishReason != null)
-                metadata.Add("google.finishReason", rawResponse.Candidates[0].FinishReason);
+            var finishReason = rawResponse.Candidates?.FirstOrDefault()?.FinishReason;
+            if (finishReason != null)
+                metadata.Add("google.finishReason", finishReason);
 
-            if (rawResponse.PromptFeedback != null && rawResponse.PromptFeedback.BlockReason != null)
-                metadata.Add("google.blockReason", rawResponse.PromptFeedback.BlockReason);
+            var blockReason = rawResponse.PromptFeedback?.BlockReason;
+            if (blockReason != null)
+                metadata.Add("google.blockReason", blockReason);
 
             return metadata;
         }

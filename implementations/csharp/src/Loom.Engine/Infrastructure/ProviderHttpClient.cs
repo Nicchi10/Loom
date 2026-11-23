@@ -35,7 +35,11 @@ namespace Loom.Engine.Infrastructure
                 if (!response.IsSuccessStatusCode)
                     throw new Exception($"Provider error {response.StatusCode}: {responseBody}");
 
-                TResponse modelResponse = JsonSerializer.Deserialize<TResponse>(responseBody, _serializerOptions);
+                TResponse? modelResponse = JsonSerializer.Deserialize<TResponse>(responseBody, _serializerOptions);
+
+                if (modelResponse == null)
+                    throw new Exception($"Provider returned an empty body: {responseBody}");
+
                 return modelResponse;
             }
             catch (Exception ex)

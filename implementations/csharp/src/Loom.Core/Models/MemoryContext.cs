@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Loom.Core.Models
 {
@@ -8,7 +8,7 @@ namespace Loom.Core.Models
     public class MemoryContext
     {
         public Enums.MemoryMode Mode { get; set; } = Enums.MemoryMode.FullHistory;
-        public string Content { get; set; }
+        public string? Content { get; set; }
         public TimeSpan? TTL { get; set; } // How long memory must persist
     }
 }

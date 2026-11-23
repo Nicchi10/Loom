@@ -28,7 +28,7 @@ namespace Loom.Engine.Context
         /// <param name="role"></param>
         /// <param name="content">User messagges, System messages </param>
         /// <param name="metadata">Optional</param>
-        public void AddMessage(MessageRole role, string content, Dictionary<string, object> metadata = null)
+        public void AddMessage(MessageRole role, string content, Dictionary<string, object>? metadata = null)
         {
             var msg = new Message
             {
@@ -63,7 +63,7 @@ namespace Loom.Engine.Context
         /// <param name="toolName"></param>
         /// <param name="toolArgs">Parameters used for tooling</param>
         /// <param name="metadata">Optional</param>
-        public void AddToolResult(string toolResult, string toolCallId, string toolName, Dictionary<string, object> toolArgs, Dictionary<string, object> metadata = null)
+        public void AddToolResult(string toolResult, string toolCallId, string toolName, Dictionary<string, object> toolArgs, Dictionary<string, object>? metadata = null)
         {
             var msg = new Message
             {

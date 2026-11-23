@@ -69,7 +69,7 @@ namespace Loom.Engine
             int maxRetries = Invocation.Hints.MaxRetryCount < 0 ? 0 : Invocation.Hints.MaxRetryCount;
 
             int round = 0;
-            LlmResponse response = null;
+            LlmResponse? response = null;
 
             while (true)
             {
@@ -77,7 +77,7 @@ namespace Loom.Engine
                 {
                     // Round 0: the input itself is over budget -> fail fast, nothing to salvage
                     // (no response yet, so it throws instead of returning like the later rounds)
-                    if (round == 0)
+                    if (response == null)
                         throw new Exception("Current context exceeds the TokenBudget set");
 
                     // Round n: the tool results pushed over budget, stop gracefully without discarding
@@ -106,8 +106,7 @@ namespace Loom.Engine
                     Conversation.AddMessage(MessageRole.Assistant, response.Content);
 
                 // GREEN: no tools requested -> this is the final answer
-                bool modelRequestedTools = response.ToolCalls != null && response.ToolCalls.Count > 0;
-                if (!modelRequestedTools)
+                if (response.ToolCalls == null || response.ToolCalls.Count == 0)
                     return response;
 
                 // RED: out of tool rounds -> stop rather than running tools the model can no longer act on
