@@ -5,11 +5,15 @@
 > Born because my boss was afraid of, and I quote, "integrating Python into .NET" :skull:
 
 <p align="center">
-  <img src="images/banner.png" alt="Loom - RAG, Tooling and Agent orchestration for the languages the AI hype train forgot" width="800" />
+  <img src="images/logo.png" alt="Loom - RAG, Tooling and Agent orchestration for the languages the AI hype train forgot" width="800" />
 </p>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![C#](https://img.shields.io/badge/C%23-239120?logo=csharp&logoColor=white)](implementations/csharp)
+<p align="center">
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT" /></a>
+  <a href="implementations/csharp"><img src="https://img.shields.io/badge/C%23-239120?logo=csharp&logoColor=white" alt="C#" /></a>
+</p>
+
+
 
 ---
 
